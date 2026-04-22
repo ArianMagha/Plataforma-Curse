@@ -1,0 +1,5 @@
+{
+  "name": "Plataforma de Cursos",
+  "description": "Uma plataforma de cursos online moderna com integração com Google Sheets e YouTube.",
+  "requestFramePermissions": []
+}
