@@ -233,6 +233,7 @@ const Sidebar = ({
                       variant={activeSubject === subject.name ? "secondary" : "ghost"} 
                       className="w-full justify-start gap-2 font-medium dark:text-zinc-300"
                       render={<Link to={`/subject/${encodeURIComponent(subject.name)}`} />}
+                      nativeButton={false}
                     >
                       <BookOpen className="w-4 h-4" />
                       {subject.name}
@@ -266,6 +267,7 @@ const Sidebar = ({
                       variant={activeLesson === lesson.module_number ? "secondary" : "ghost"} 
                       className="w-full justify-start gap-2 text-sm dark:text-zinc-400"
                       render={<Link to={`/subject/${encodeURIComponent(activeSubject)}/lesson/${lesson.module_number}`} />}
+                      nativeButton={false}
                     >
                       <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] ${
                         activeLesson === lesson.module_number 
@@ -289,6 +291,7 @@ const Sidebar = ({
           variant="ghost" 
           className="w-full justify-start gap-2 text-zinc-500 dark:text-zinc-400"
           render={<Link to="/profile" />}
+          nativeButton={false}
         >
           <User className="w-4 h-4" />
           Meu Perfil
@@ -308,6 +311,7 @@ const Header = ({ title, subjects }: { title: string, subjects: Subject[] }) => 
       <div className="flex items-center gap-4">
         <Sheet>
           <SheetTrigger
+            nativeButton={true}
             render={
               <Button variant="ghost" size="icon" className="md:hidden">
                 <Menu className="w-5 h-5" />
@@ -335,6 +339,7 @@ const Header = ({ title, subjects }: { title: string, subjects: Subject[] }) => 
           variant="ghost" 
           className="rounded-full"
           render={<Link to="/profile" />}
+          nativeButton={false}
         >
           <User className="w-5 h-5 text-zinc-500" />
         </Button>
@@ -650,6 +655,7 @@ const LessonDetail = ({
                 variant="outline" 
                 disabled={lesson.module_number === 1} 
                 className="dark:border-zinc-700 dark:text-zinc-300"
+                nativeButton={lesson.module_number === 1}
                 render={lesson.module_number !== 1 ? (
                   <Link to={`/subject/${encodeURIComponent(subject.name)}/lesson/${lesson.module_number - 1}`}>
                     Módulo Anterior
@@ -662,6 +668,7 @@ const LessonDetail = ({
               <Button 
                 className="bg-indigo-600 hover:bg-indigo-700" 
                 disabled={lesson.module_number === subject.lessons.length}
+                nativeButton={false}
                 render={
                   <Link to={lesson.module_number !== subject.lessons.length ? `/subject/${encodeURIComponent(subject.name)}/lesson/${lesson.module_number + 1}` : "/profile"}>
                     {lesson.module_number !== subject.lessons.length ? "Próximo Módulo" : "Concluir Curso"}
