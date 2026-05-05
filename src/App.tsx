@@ -28,7 +28,8 @@ import {
   Sparkles,
   Send,
   Circle,
-  Trophy
+  Trophy,
+  Users
 } from 'lucide-react';
 import { GoogleGenAI } from "@google/genai";
 import { Button } from '@/components/ui/button';
@@ -222,6 +223,15 @@ const Sidebar = ({
               Meus Cursos
             </h3>
             <div className="space-y-1">
+              <Button 
+                variant={activeSubject === undefined && activeLesson === undefined ? "secondary" : "ghost"} 
+                className="w-full justify-start gap-2 font-medium dark:text-zinc-300 mb-2"
+                render={<Link to="/" />}
+                nativeButton={false}
+              >
+                <Layout className="w-4 h-4 text-indigo-600" />
+                Início
+              </Button>
               {subjects.map((subject) => {
                 const completedCount = progress[subject.name]?.length || 0;
                 const totalCount = subject.lessons.length;
@@ -296,7 +306,12 @@ const Sidebar = ({
           <User className="w-4 h-4" />
           Meu Perfil
         </Button>
-        <Button variant="ghost" className="w-full justify-start gap-2 text-zinc-500 dark:text-zinc-400">
+        <Button 
+          variant="ghost" 
+          className="w-full justify-start gap-2 text-zinc-500 dark:text-zinc-400"
+          render={<Link to="/settings" />}
+          nativeButton={false}
+        >
           <Settings className="w-4 h-4" />
           Configurações
         </Button>
@@ -430,15 +445,276 @@ const UserProfile = ({ progress, subjects }: { progress: Record<string, number[]
   );
 };
 
+interface ForumPost {
+  id: string;
+  user: string;
+  avatar?: string;
+  content: string;
+  timestamp: string;
+}
+
+const Forum = ({ subjectName, messages, onPost }: { subjectName: string, messages: ForumPost[], onPost: (content: string) => void }) => {
+  const [newMsg, setNewMsg] = useState('');
+
+  const handlePost = () => {
+    if (!newMsg.trim()) return;
+    onPost(newMsg);
+    setNewMsg('');
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-4 shadow-sm">
+        <h3 className="font-semibold mb-4 dark:text-white flex items-center gap-2">
+          <MessageSquare className="w-5 h-5 text-indigo-600" />
+          Fórum de Discussão - {subjectName}
+        </h3>
+        <div className="flex gap-3">
+          <div className="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 flex-shrink-0">
+            <User className="w-5 h-5" />
+          </div>
+          <div className="flex-1 space-y-2">
+            <textarea 
+              value={newMsg}
+              onChange={(e) => setNewMsg(e.target.value)}
+              placeholder="Compartilhe suas dúvidas ou insights com outros alunos..."
+              className="w-full min-h-[100px] p-3 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 dark:text-zinc-200 text-sm focus:ring-2 focus:ring-indigo-500 outline-none resize-none transition-all"
+            />
+            <div className="flex justify-end">
+              <Button onClick={handlePost} disabled={!newMsg.trim()} className="bg-indigo-600 hover:bg-indigo-700">
+                Publicar Mensagem
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        {messages.length === 0 ? (
+          <div className="text-center py-12 bg-zinc-50 dark:bg-zinc-900/50 rounded-xl border border-dashed border-zinc-300 dark:border-zinc-700">
+            <Users className="w-12 h-12 text-zinc-300 mx-auto mb-3" />
+            <p className="text-zinc-500">Nenhuma discussão iniciada ainda. Seja o primeiro a perguntar!</p>
+          </div>
+        ) : (
+          messages.slice().reverse().map((post) => (
+            <motion.div 
+              key={post.id}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-white dark:bg-zinc-900 p-4 rounded-xl border border-zinc-100 dark:border-zinc-800 shadow-sm"
+            >
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-zinc-500">
+                  <User className="w-5 h-5" />
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="font-semibold text-sm dark:text-white">{post.user}</span>
+                    <span className="text-[10px] text-zinc-400">{new Date(post.timestamp).toLocaleString('pt-BR')}</span>
+                  </div>
+                  <p className="text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed">
+                    {post.content}
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+};
+
+const SettingsView = () => {
+  const [userData, setUserData] = useState({
+    name: 'Estudante EducaFlow',
+    email: 'estudante@educaflow.com.br',
+    phone: '(11) 98765-4321',
+    address: 'Rua das Flores, 123, São Paulo - SP'
+  });
+
+  const [docs, setDocs] = useState([
+    { id: '1', name: 'Histórico Escolar.pdf', status: 'Aprovado', date: '2026-03-15' },
+    { id: '2', name: 'RG_Frente.jpg', status: 'Em Análise', date: '2026-05-01' }
+  ]);
+
+  const [saving, setSaving] = useState(false);
+
+  const handleSave = () => {
+    setSaving(true);
+    setTimeout(() => {
+      setSaving(false);
+      alert('Dados salvos com sucesso!');
+    }, 1000);
+  };
+
+  return (
+    <div className="p-8 max-w-5xl mx-auto space-y-10">
+      <div className="flex flex-col gap-2">
+        <h1 className="text-4xl font-black dark:text-white">Configurações e Documentos</h1>
+        <p className="text-zinc-500">Gerencie sua conta e interaja com a coordenação.</p>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2 space-y-8">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <User className="w-5 h-5 text-indigo-600" />
+                Dados Cadastrais
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-zinc-500 uppercase tracking-wider">Nome Completo</label>
+                  <input 
+                    type="text" 
+                    value={userData.name}
+                    onChange={(e) => setUserData({...userData, name: e.target.value})}
+                    className="w-full p-3 rounded-lg bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-zinc-500 uppercase tracking-wider">E-mail</label>
+                  <input 
+                    type="email" 
+                    value={userData.email}
+                    onChange={(e) => setUserData({...userData, email: e.target.value})}
+                    className="w-full p-3 rounded-lg bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-zinc-500 uppercase tracking-wider">Telefone</label>
+                  <input 
+                    type="text" 
+                    value={userData.phone}
+                    onChange={(e) => setUserData({...userData, phone: e.target.value})}
+                    className="w-full p-3 rounded-lg bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-zinc-500 uppercase tracking-wider">Endereço Completo</label>
+                <input 
+                  type="text" 
+                  value={userData.address}
+                  onChange={(e) => setUserData({...userData, address: e.target.value})}
+                  className="w-full p-3 rounded-lg bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              </div>
+              <div className="flex justify-end pt-4">
+                <Button onClick={handleSave} disabled={saving} className="bg-indigo-600 hover:bg-indigo-700 font-bold px-8">
+                  {saving ? 'Salvando...' : 'Atualizar Dados'}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <ClipboardList className="w-5 h-5 text-indigo-600" />
+                Validar Documentos com a Coordenação
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="border-2 border-dashed border-zinc-200 dark:border-zinc-800 rounded-2xl p-8 text-center bg-zinc-50 dark:bg-zinc-900/50">
+                <ExternalLink className="w-10 h-10 text-indigo-400 mx-auto mb-4" />
+                <h4 className="font-bold dark:text-white mb-1">Upload de Arquivos</h4>
+                <p className="text-sm text-zinc-500 mb-6">Arraste seus documentos aqui ou clique no botão abaixo para selecionar.</p>
+                <Button variant="outline" className="dark:border-zinc-700">Explorar Arquivos</Button>
+              </div>
+
+              <div className="space-y-3">
+                <h4 className="font-bold text-sm text-zinc-500 uppercase tracking-wider">Envios Recentes</h4>
+                {docs.map(doc => (
+                  <div key={doc.id} className="flex items-center justify-between p-4 rounded-xl border border-zinc-100 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-lg bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
+                        <ClipboardList className="w-5 h-5 text-zinc-500" />
+                      </div>
+                      <div>
+                        <div className="font-bold text-sm dark:text-white">{doc.name}</div>
+                        <div className="text-[10px] text-zinc-400">Enviado em {doc.date}</div>
+                      </div>
+                    </div>
+                    <div className={`text-xs font-bold px-3 py-1 rounded-full ${
+                      doc.status === 'Aprovado' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'
+                    }`}>
+                      {doc.status}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="space-y-6">
+          <Card className="bg-indigo-600 text-white border-none shadow-indigo-200 shadow-xl">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Sparkles className="w-5 h-5" />
+                Solicitações Rápidas
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <Button variant="secondary" className="w-full justify-start text-indigo-700 font-bold">
+                Declaração de Matrícula
+              </Button>
+              <Button variant="secondary" className="w-full justify-start text-indigo-700 font-bold">
+                Histórico Acadêmico
+              </Button>
+              <Button variant="secondary" className="w-full justify-start text-indigo-700 font-bold">
+                Certificado de Conclusão
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="dark:bg-zinc-900">
+            <CardHeader>
+              <CardTitle className="text-sm font-bold uppercase tracking-wider text-zinc-500 flex items-center gap-2">
+                <Bot className="w-4 h-4" /> Suporte Acadêmico
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed mb-4">
+                Dúvidas sobre documentação ou prazos? Nosso orientador virtual pode ajudar.
+              </p>
+              <Button variant="outline" className="w-full border-indigo-200 text-indigo-600 dark:border-zinc-800 font-bold">Falar com Suporte</Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const Home = ({ subjects, progress }: { subjects: Subject[], progress: Record<string, number[]> }) => {
   return (
-    <div className="p-8 max-w-6xl mx-auto">
-      <div className="mb-10">
-        <h1 className="text-4xl mb-2 dark:text-white">Bem-vindo ao EducaFlow</h1>
-        <p className="text-zinc-500 text-lg">Escolha uma matéria para começar sua jornada de aprendizado.</p>
+    <div className="p-8 max-w-7xl mx-auto">
+      <div className="mb-12 flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div>
+          <h1 className="text-5xl font-bold mb-3 dark:text-white bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent">
+            Seu Futuro Começa Aqui
+          </h1>
+          <p className="text-zinc-500 text-xl max-w-2xl leading-relaxed">
+            Bem-vindo ao EducaFlow. Explore nossas trilhas de conhecimento e comece a aprender hoje mesmo.
+          </p>
+        </div>
+        <div className="flex items-center gap-4 bg-white dark:bg-zinc-900 p-4 rounded-2xl shadow-sm border border-zinc-100 dark:border-zinc-800">
+          <div className="p-3 bg-indigo-50 dark:bg-indigo-900/30 rounded-xl">
+            <Trophy className="w-6 h-6 text-indigo-600" />
+          </div>
+          <div>
+            <div className="text-xs text-zinc-500 uppercase tracking-wider font-bold">Cursos Iniciados</div>
+            <div className="text-2xl font-black dark:text-white">{Object.keys(progress).length}</div>
+          </div>
+        </div>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {subjects.map((subject, idx) => {
           const completed = progress[subject.name]?.length || 0;
           const total = subject.lessons.length;
@@ -447,31 +723,36 @@ const Home = ({ subjects, progress }: { subjects: Subject[], progress: Record<st
           return (
             <motion.div
               key={subject.name}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: idx * 0.1 }}
             >
               <Link to={`/subject/${encodeURIComponent(subject.name)}`}>
-                <Card className="hover:shadow-lg transition-all border-zinc-200 dark:border-zinc-800 group cursor-pointer h-full dark:bg-zinc-900">
+                <Card className="hover:shadow-xl transition-all border-zinc-200 dark:border-zinc-800 group cursor-pointer h-full dark:bg-zinc-900 flex flex-col overflow-hidden border-b-4 border-b-indigo-600">
                   <CardHeader className="pb-4">
-                    <div className="w-12 h-12 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 rounded-xl flex items-center justify-center mb-4 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
-                      <BookOpen className="w-6 h-6" />
+                    <div className="w-14 h-14 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-indigo-600 group-hover:text-white transition-all shadow-sm">
+                      <BookOpen className="w-7 h-7" />
                     </div>
-                    <CardTitle className="text-2xl dark:text-white">{subject.name}</CardTitle>
-                    <CardDescription className="dark:text-zinc-400">{total} Módulos disponíveis</CardDescription>
+                    <CardTitle className="text-2xl dark:text-white font-bold">{subject.name}</CardTitle>
+                    <CardDescription className="dark:text-zinc-400 text-base">{total} Módulos disponíveis</CardDescription>
                   </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2 mb-4">
-                      <div className="flex justify-between text-xs">
-                        <span className="text-zinc-500">Seu progresso</span>
+                  <CardContent className="flex-1 flex flex-col justify-end">
+                    <div className="space-y-3 mb-6">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-zinc-500 font-medium italic">Progresso</span>
                         <span className="font-bold text-indigo-600">{percent}%</span>
                       </div>
-                      <div className="h-1.5 w-full bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
-                        <div className="h-full bg-indigo-600" style={{ width: `${percent}%` }} />
+                      <div className="h-2 w-full bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+                        <motion.div 
+                          initial={{ width: 0 }}
+                          animate={{ width: `${percent}%` }}
+                          className="h-full bg-indigo-600" 
+                        />
                       </div>
                     </div>
-                    <div className="flex items-center text-indigo-600 font-medium text-sm">
-                      Ver módulos <ChevronRight className="w-4 h-4 ml-1" />
+                    <div className="flex items-center justify-between text-indigo-600 font-bold group/link">
+                      <span>Começar Trilhas</span>
+                      <ChevronRight className="w-5 h-5 transform group-hover/link:translate-x-1 transition-transform" />
                     </div>
                   </CardContent>
                 </Card>
@@ -484,57 +765,109 @@ const Home = ({ subjects, progress }: { subjects: Subject[], progress: Record<st
   );
 };
 
-const SubjectDetail = ({ subjects, progress }: { subjects: Subject[], progress: Record<string, number[]> }) => {
+const SubjectDetail = ({ 
+  subjects, 
+  progress, 
+  forumMessages, 
+  postToForum 
+}: { 
+  subjects: Subject[], 
+  progress: Record<string, number[]>,
+  forumMessages: Record<string, ForumPost[]>,
+  postToForum: (subj: string, content: string) => void
+}) => {
   const { subjectName } = useParams<{ subjectName: string }>();
+  const [activeTab, setActiveTab] = useState<'modules' | 'forum'>('modules');
   const subject = subjects.find(s => s.name === decodeURIComponent(subjectName || ''));
   
   if (!subject) return <div className="p-8 dark:text-white">Matéria não encontrada.</div>;
 
   return (
-    <div className="p-8 max-w-4xl mx-auto">
-      <Link to="/" className="inline-flex items-center text-zinc-500 hover:text-indigo-600 mb-6 transition-colors">
-        <ArrowLeft className="w-4 h-4 mr-2" /> Voltar para o início
+    <div className="p-8 max-w-5xl mx-auto">
+      <Link to="/" className="inline-flex items-center text-zinc-500 hover:text-indigo-600 mb-8 transition-colors font-medium">
+        <ArrowLeft className="w-4 h-4 mr-2" /> Voltar ao Início
       </Link>
       
-      <div className="mb-10">
-        <h1 className="text-4xl mb-2 dark:text-white">{subject.name}</h1>
-        <p className="text-zinc-500 text-lg">Explore os módulos desta matéria.</p>
+      <div className="mb-12">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-zinc-100 dark:border-zinc-800">
+          <div>
+            <h1 className="text-5xl font-black mb-3 dark:text-white">{subject.name}</h1>
+            <p className="text-zinc-500 text-xl">Explore os módulos e participe das discussões.</p>
+          </div>
+          <div className="flex bg-zinc-100 dark:bg-zinc-800 p-1 rounded-xl shadow-inner">
+            <button 
+              onClick={() => setActiveTab('modules')}
+              className={`px-6 py-2.5 rounded-lg text-sm font-bold transition-all ${activeTab === 'modules' ? 'bg-white dark:bg-zinc-700 text-indigo-600 shadow-sm' : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'}`}
+            >
+              Conteúdo
+            </button>
+            <button 
+              onClick={() => setActiveTab('forum')}
+              className={`px-6 py-2.5 rounded-lg text-sm font-bold transition-all ${activeTab === 'forum' ? 'bg-white dark:bg-zinc-700 text-indigo-600 shadow-sm' : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'}`}
+            >
+              Fórum
+            </button>
+          </div>
+        </div>
       </div>
       
-      <div className="space-y-4">
-        {subject.lessons.map((lesson, idx) => {
-          const isCompleted = progress[subject.name]?.includes(lesson.module_number);
-          return (
-            <motion.div
-              key={lesson.module_number}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: idx * 0.05 }}
-            >
-              <Link to={`/subject/${encodeURIComponent(subject.name)}/lesson/${lesson.module_number}`}>
-                <Card className={`hover:border-indigo-300 transition-all border-zinc-200 dark:border-zinc-800 group cursor-pointer dark:bg-zinc-900 ${isCompleted ? 'bg-green-50/30 dark:bg-green-900/5' : ''}`}>
-                  <CardContent className="p-6 flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-colors ${
-                        isCompleted 
-                          ? 'bg-green-100 text-green-600 dark:bg-green-900/30' 
-                          : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 group-hover:bg-indigo-600 group-hover:text-white'
-                      }`}>
-                        {isCompleted ? <CheckCircle className="w-5 h-5" /> : lesson.module_number}
-                      </div>
-                      <div>
-                        <h3 className="text-lg font-semibold dark:text-white">{lesson.title}</h3>
-                        <p className="text-sm text-zinc-500">Módulo {lesson.module_number}</p>
-                      </div>
-                    </div>
-                    <PlayCircle className={`w-6 h-6 transition-colors ${isCompleted ? 'text-green-500' : 'text-zinc-300 group-hover:text-indigo-600'}`} />
-                  </CardContent>
-                </Card>
-              </Link>
-            </motion.div>
-          );
-        })}
-      </div>
+      <AnimatePresence mode="wait">
+        {activeTab === 'modules' ? (
+          <motion.div
+            key="modules"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="space-y-4"
+          >
+            {subject.lessons.map((lesson, idx) => {
+              const isCompleted = progress[subject.name]?.includes(lesson.module_number);
+              return (
+                <motion.div
+                  key={lesson.module_number}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: idx * 0.05 }}
+                >
+                  <Link to={`/subject/${encodeURIComponent(subject.name)}/lesson/${lesson.module_number}`}>
+                    <Card className={`hover:border-indigo-400 hover:shadow-md transition-all border-zinc-200 dark:border-zinc-800 group cursor-pointer dark:bg-zinc-900 ${isCompleted ? 'bg-green-50/20 dark:bg-green-900/5 border-green-200/50 shadow-inner' : ''}`}>
+                      <CardContent className="p-6 flex items-center justify-between">
+                        <div className="flex items-center gap-5">
+                          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-bold transition-all text-lg ${
+                            isCompleted 
+                              ? 'bg-green-100 text-green-600 dark:bg-green-900/30' 
+                              : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 group-hover:bg-indigo-600 group-hover:text-white'
+                          }`}>
+                            {isCompleted ? <CheckCircle className="w-6 h-6" /> : lesson.module_number}
+                          </div>
+                          <div>
+                            <h3 className="text-xl font-bold dark:text-white mb-1 group-hover:text-indigo-600 transition-colors">{lesson.title}</h3>
+                            <p className="text-sm text-zinc-500">Módulo {lesson.module_number}</p>
+                          </div>
+                        </div>
+                        <PlayCircle className={`w-8 h-8 transition-all ${isCompleted ? 'text-green-500' : 'text-zinc-300 group-hover:text-indigo-600 group-hover:scale-110'}`} />
+                      </CardContent>
+                    </Card>
+                  </Link>
+                </motion.div>
+              );
+            })}
+          </motion.div>
+        ) : (
+          <motion.div
+            key="forum"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+          >
+            <Forum 
+              subjectName={subject.name} 
+              messages={forumMessages[subject.name] || []} 
+              onPost={(content) => postToForum(subject.name, content)} 
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
@@ -701,6 +1034,10 @@ export default function App() {
     const saved = localStorage.getItem('educaflow_dark');
     return saved === 'true';
   });
+  const [forumMessages, setForumMessages] = useState<Record<string, ForumPost[]>>(() => {
+    const saved = localStorage.getItem('educaflow_forum');
+    return saved ? JSON.parse(saved) : {};
+  });
 
   useEffect(() => {
     const loadData = async () => {
@@ -719,6 +1056,10 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem('educaflow_progress', JSON.stringify(progress));
   }, [progress]);
+
+  useEffect(() => {
+    localStorage.setItem('educaflow_forum', JSON.stringify(forumMessages));
+  }, [forumMessages]);
 
   useEffect(() => {
     localStorage.setItem('educaflow_dark', String(darkMode));
@@ -740,6 +1081,20 @@ export default function App() {
         return { ...prev, [subjectName]: [...current, moduleNumber] };
       }
     });
+  };
+
+  const postToForum = (subjectName: string, content: string) => {
+    const newPost: ForumPost = {
+      id: Math.random().toString(36).substr(2, 9),
+      user: 'Você (Aluno)',
+      content: content,
+      timestamp: new Date().toISOString()
+    };
+
+    setForumMessages(prev => ({
+      ...prev,
+      [subjectName]: [...(prev[subjectName] || []), newPost]
+    }));
   };
 
   if (loading) {
@@ -772,9 +1127,17 @@ export default function App() {
           <div className="flex-1 overflow-y-auto">
             <Routes>
               <Route path="/" element={<Home subjects={subjects} progress={progress} />} />
-              <Route path="/subject/:subjectName" element={<SubjectDetail subjects={subjects} progress={progress} />} />
+              <Route path="/subject/:subjectName" element={
+                <SubjectDetail 
+                  subjects={subjects} 
+                  progress={progress} 
+                  forumMessages={forumMessages} 
+                  postToForum={postToForum} 
+                />
+              } />
               <Route path="/subject/:subjectName/lesson/:lessonNumber" element={<LessonDetail subjects={subjects} progress={progress} toggleComplete={toggleComplete} />} />
               <Route path="/profile" element={<UserProfile progress={progress} subjects={subjects} />} />
+              <Route path="/settings" element={<SettingsView />} />
             </Routes>
           </div>
         </main>
