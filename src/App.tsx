@@ -229,15 +229,14 @@ const Sidebar = ({
                 
                 return (
                   <div key={subject.name} className="space-y-1">
-                    <Link to={`/subject/${encodeURIComponent(subject.name)}`}>
-                      <Button 
-                        variant={activeSubject === subject.name ? "secondary" : "ghost"} 
-                        className="w-full justify-start gap-2 font-medium dark:text-zinc-300"
-                      >
-                        <BookOpen className="w-4 h-4" />
-                        {subject.name}
-                      </Button>
-                    </Link>
+                    <Button 
+                      variant={activeSubject === subject.name ? "secondary" : "ghost"} 
+                      className="w-full justify-start gap-2 font-medium dark:text-zinc-300"
+                      render={<Link to={`/subject/${encodeURIComponent(subject.name)}`} />}
+                    >
+                      <BookOpen className="w-4 h-4" />
+                      {subject.name}
+                    </Button>
                     <div className="px-2 pb-2">
                       <div className="h-1 w-full bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
                         <div 
@@ -262,24 +261,21 @@ const Sidebar = ({
                 {subjects.find(s => s.name === activeSubject)?.lessons.map((lesson) => {
                   const isCompleted = progress[activeSubject]?.includes(lesson.module_number);
                   return (
-                    <Link 
-                      key={lesson.module_number} 
-                      to={`/subject/${encodeURIComponent(activeSubject)}/lesson/${lesson.module_number}`}
+                    <Button 
+                      key={lesson.module_number}
+                      variant={activeLesson === lesson.module_number ? "secondary" : "ghost"} 
+                      className="w-full justify-start gap-2 text-sm dark:text-zinc-400"
+                      render={<Link to={`/subject/${encodeURIComponent(activeSubject)}/lesson/${lesson.module_number}`} />}
                     >
-                      <Button 
-                        variant={activeLesson === lesson.module_number ? "secondary" : "ghost"} 
-                        className="w-full justify-start gap-2 text-sm dark:text-zinc-400"
-                      >
-                        <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] ${
-                          activeLesson === lesson.module_number 
-                            ? 'bg-indigo-600 text-white' 
-                            : isCompleted ? 'bg-green-100 text-green-600' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500'
-                        }`}>
-                          {isCompleted ? <CheckCircle className="w-3 h-3" /> : lesson.module_number}
-                        </div>
-                        <span className="truncate">{lesson.title}</span>
-                      </Button>
-                    </Link>
+                      <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] ${
+                        activeLesson === lesson.module_number 
+                          ? 'bg-indigo-600 text-white' 
+                          : isCompleted ? 'bg-green-100 text-green-600' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500'
+                      }`}>
+                        {isCompleted ? <CheckCircle className="w-3 h-3" /> : lesson.module_number}
+                      </div>
+                      <span className="truncate">{lesson.title}</span>
+                    </Button>
                   );
                 })}
               </div>
@@ -289,12 +285,14 @@ const Sidebar = ({
       </ScrollArea>
       
       <div className="p-4 border-t border-zinc-100 dark:border-zinc-800">
-        <Link to="/profile">
-          <Button variant="ghost" className="w-full justify-start gap-2 text-zinc-500 dark:text-zinc-400">
-            <User className="w-4 h-4" />
-            Meu Perfil
-          </Button>
-        </Link>
+        <Button 
+          variant="ghost" 
+          className="w-full justify-start gap-2 text-zinc-500 dark:text-zinc-400"
+          render={<Link to="/profile" />}
+        >
+          <User className="w-4 h-4" />
+          Meu Perfil
+        </Button>
         <Button variant="ghost" className="w-full justify-start gap-2 text-zinc-500 dark:text-zinc-400">
           <Settings className="w-4 h-4" />
           Configurações
@@ -309,11 +307,13 @@ const Header = ({ title, subjects }: { title: string, subjects: Subject[] }) => 
     <header className="h-16 border-b border-zinc-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md sticky top-0 z-30 px-6 flex items-center justify-between">
       <div className="flex items-center gap-4">
         <Sheet>
-          <SheetTrigger asChild>
-            <Button variant="ghost" size="icon" className="md:hidden">
-              <Menu className="w-5 h-5" />
-            </Button>
-          </SheetTrigger>
+          <SheetTrigger
+            render={
+              <Button variant="ghost" size="icon" className="md:hidden">
+                <Menu className="w-5 h-5" />
+              </Button>
+            }
+          />
           <SheetContent side="left" className="p-0 w-72">
             <Sidebar subjects={subjects} progress={{}} darkMode={false} setDarkMode={() => {}} />
           </SheetContent>
@@ -330,11 +330,14 @@ const Header = ({ title, subjects }: { title: string, subjects: Subject[] }) => 
             className="pl-9 h-9 w-64 rounded-full bg-zinc-100 dark:bg-zinc-900 border-transparent focus:bg-white dark:focus:bg-zinc-800 focus:ring-2 focus:ring-indigo-500 text-sm transition-all outline-none dark:text-zinc-200"
           />
         </div>
-        <Link to="/profile">
-          <Button size="icon" variant="ghost" className="rounded-full">
-            <User className="w-5 h-5 text-zinc-500" />
-          </Button>
-        </Link>
+        <Button 
+          size="icon" 
+          variant="ghost" 
+          className="rounded-full"
+          render={<Link to="/profile" />}
+        >
+          <User className="w-5 h-5 text-zinc-500" />
+        </Button>
       </div>
     </header>
   );
@@ -643,25 +646,28 @@ const LessonDetail = ({
             )}
             
             <div className="flex justify-between items-center mt-12 pt-8 border-t border-zinc-100 dark:border-zinc-800">
-              <Button variant="outline" disabled={lesson.module_number === 1} asChild={lesson.module_number !== 1} className="dark:border-zinc-700 dark:text-zinc-300">
-                {lesson.module_number !== 1 ? (
+              <Button 
+                variant="outline" 
+                disabled={lesson.module_number === 1} 
+                className="dark:border-zinc-700 dark:text-zinc-300"
+                render={lesson.module_number !== 1 ? (
                   <Link to={`/subject/${encodeURIComponent(subject.name)}/lesson/${lesson.module_number - 1}`}>
                     Módulo Anterior
                   </Link>
-                ) : (
-                  <span>Módulo Anterior</span>
-                )}
+                ) : undefined}
+              >
+                {lesson.module_number === 1 && <span>Módulo Anterior</span>}
               </Button>
               
-              <Button className="bg-indigo-600 hover:bg-indigo-700" disabled={lesson.module_number === subject.lessons.length} asChild={lesson.module_number !== subject.lessons.length}>
-                {lesson.module_number !== subject.lessons.length ? (
-                  <Link to={`/subject/${encodeURIComponent(subject.name)}/lesson/${lesson.module_number + 1}`}>
-                    Próximo Módulo
+              <Button 
+                className="bg-indigo-600 hover:bg-indigo-700" 
+                disabled={lesson.module_number === subject.lessons.length}
+                render={
+                  <Link to={lesson.module_number !== subject.lessons.length ? `/subject/${encodeURIComponent(subject.name)}/lesson/${lesson.module_number + 1}` : "/profile"}>
+                    {lesson.module_number !== subject.lessons.length ? "Próximo Módulo" : "Concluir Curso"}
                   </Link>
-                ) : (
-                  <Link to="/profile">Concluir Curso</Link>
-                )}
-              </Button>
+                }
+              />
             </div>
           </div>
         </motion.div>
